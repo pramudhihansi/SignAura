@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SignAura | User Dashboard</title>
+
+    <link rel="icon" type="image/jpeg" href="../assets/images/logo.jpg">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        * { font-family: 'Poppins', sans-serif; }
+
+        body {
+            background: linear-gradient(135deg, #8B5CF6, #EC4899, #F97316);
+            background-size: 400% 400%;
+            animation: gradientMove 15s ease infinite;
+            min-height: 100vh;
+        }
+
+        @keyframes gradientMove {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .navbar {
+            background: rgba(255,255,255,0.95);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+            padding: 15px 0;
+        }
+
+        .navbar-brand {
+            font-weight: 700;
+            font-size: 24px;
+            background: linear-gradient(135deg, #6366f1, #a855f7);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .btn-logout {
+            padding: 10px 25px;
+            border-radius: 12px;
+            font-weight: 600;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+        }
+
+        .dashboard-card {
+            background: rgba(255,255,255,0.25);
+            backdrop-filter: blur(15px);
+            border-radius: 25px;
+            padding: 40px;
+            box-shadow: 0 15px 40px rgba(0,0,0,0.3);
+            margin-top: 40px;
+        }
+
+        /* 🔹 Larger Camera */
+        .video-container {
+            background: black;
+            border-radius: 25px;
+            overflow: hidden;
+            margin-bottom: 20px;
+            width: 100%;
+            height: 650px; /* Bigger frame */
+        }
+
+        video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover; /* Fill container without distortion */
+        }
+
+        .output-box {
+            background: rgba(255,255,255,0.85);
+            padding: 25px;
+            border-radius: 20px;
+        }
+
+        .output-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+        }
+
+        .accuracy-box {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+            padding: 12px;
+            border-radius: 12px;
+            text-align: center;
+            margin-top: 15px;
+            font-weight: 700;
+        }
+
+        .voice-buttons {
+            display: flex;
+            gap: 15px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+
+        .btn-voice {
+            padding: 12px 20px;
+            border-radius: 12px;
+            color: white;
+            font-weight: 600;
+            border: none;
+        }
+
+        .english { background: #2563eb; }
+        .sinhala { background: #059669; }
+        .tamil { background: #d97706; }
+    </style>
+</head>
+
+<body>
+
+<!-- NAVBAR -->
+<nav class="navbar">
+    <div class="container d-flex justify-content-between align-items-center">
+        <span class="navbar-brand">✨ SignAura</span>
+        <div class="d-flex gap-2">
+            <a href="feedback_review.html" class="btn btn-outline-primary fw-semibold">
+                📝 Feedback & Review
+            </a>
+            <a href="../logout.php" class="btn btn-logout">🚪 Logout</a>
+        </div>
+    </div>
+</nav>
+
+<!-- DASHBOARD -->
+<div class="container">
+    <div class="dashboard-card">
+
+        <h2>
+            Welcome, <span id="username">Loading...</span> 👋
+        </h2>
+        <div id="user-info" class="mb-4">Loading user info...</div>
+
+        <h4>🎥 Live Sign Language Translation</h4>
+        <div class="video-container">
+            <video id="video" autoplay></video>
+        </div>
+
+        <div class="output-box">
+            <div class="output-row"><b>🇬🇧 English:</b> <span id="output-en">-</span></div>
+            <div class="output-row"><b>🇱🇰 Sinhala:</b> <span id="output-si">-</span></div>
+            <div class="output-row"><b>🇮🇳 Tamil:</b> <span id="output-ta">-</span></div>
+
+            <div class="accuracy-box">
+                Accuracy: <span id="accuracy">0%</span>
+            </div>
+        </div>
+
+        <div class="voice-buttons">
+            <button id="speak-en" class="btn-voice english">🔊 English</button>
+            <button id="speak-si" class="btn-voice sinhala">🔊 Sinhala</button>
+            <button id="speak-ta" class="btn-voice tamil">🔊 Tamil</button>
+        </div>
+
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.9.0/dist/tf.min.js"></script>
+
+<script>
+    // Fetch user info
+    fetch("fetch_user.php")
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                username.innerText = data.username;
+                user-info.innerHTML = `📧 ${data.email} | 👤 ${data.role}`;
+            }
+        });
+
+    // Webcam
+    navigator.mediaDevices.getUserMedia({ video: true })
+        .then(stream => video.srcObject = stream)
+        .catch(err => console.error("Webcam access error:", err));
+
+    // Text-to-speech
+    function speak(text, lang) {
+        if (text && text !== '-') {
+            let u = new SpeechSynthesisUtterance(text);
+            u.lang = lang;
+            speechSynthesis.speak(u);
+        }
+    }
+
+    speak-en.onclick = () => speak(output-en.innerText, 'en-US');
+    speak-si.onclick = () => speak(output-si.innerText, 'si-LK');
+    speak-ta.onclick = () => speak(output-ta.innerText, 'ta-IN');
+
+    // SAVE PREDICTIONS FOR FEEDBACK PAGE
+    function savePrediction() {
+        if (output-en.innerText !== '-') {
+            localStorage.setItem("last_prediction_en", output-en.innerText);
+            localStorage.setItem("last_prediction_si", output-si.innerText);
+            localStorage.setItem("last_prediction_ta", output-ta.innerText);
+        }
+    }
+
+    setInterval(savePrediction, 1000);
+
+    /*
+      🔴 ADD YOUR ML MODEL LOGIC HERE
+      Update output-en, output-si, output-ta, accuracy
+    */
+</script>
+
+</body>
+</html>
