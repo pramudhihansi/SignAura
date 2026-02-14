@@ -16,9 +16,7 @@ api/venv/
 
 # ML Models (large files - store externally)
 ml-models/datasets/*.csv
-ml-models/*.keras
-ml-models/*.pkl
-*.h5
+
 
 # IDE
 .vscode/
