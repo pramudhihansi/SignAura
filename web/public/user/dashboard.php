@@ -340,7 +340,7 @@
 
 // Configuration
 const API_URL = 'http://localhost:5000/predict';
-const HAND_CHECK_INTERVAL = 200;      // Check for hand every 200ms
+const HAND_CHECK_INTERVAL = 600;      // Check for hand every 600ms (Reduced for performance)
 const COUNTDOWN_DURATION = 3;         // 3 seconds
 const CONFIDENCE_THRESHOLD = 0.6;     // 60% confidence
 const CAPTURE_FLASH_TIME = 500;       // ms

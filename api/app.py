@@ -13,11 +13,8 @@ from inference import SignLanguageInference
 app = Flask(__name__)
 
 # Configure CORS (allow requests from PHP frontend)
-CORS(app, resources={
-    r"/*": {
-        "origins": ["http://localhost:8000", "http://127.0.0.1:8000"]
-    }
-})
+# Configure CORS (allow requests from any frontend port)
+CORS(app, resources={r"/*": {"origins": "*"}})
 
 # Load environment variables
 API_PORT = int(os.getenv('API_PORT', 5000))
