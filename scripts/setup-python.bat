@@ -43,7 +43,7 @@ exit /b 1
 echo.
 
 echo [2/5] Navigating to api directory...
-cd /d "%~dp0"
+cd /d "%~dp0.."
 cd api
 if %errorlevel% neq 0 (
     echo ❌ api directory not found!
